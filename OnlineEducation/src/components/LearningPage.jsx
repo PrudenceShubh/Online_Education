@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { courses } from './CourseList';
+import VideoQuizComponent from './VideoQuizComponent';
 
 const LearningPage = () => {
   const { courseId } = useParams();
@@ -24,6 +25,7 @@ const LearningPage = () => {
   const [transcriptError, setTranscriptError] = useState(null);
   const playerRef = useRef(null);
   const timerRef = useRef(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   // Enhanced YouTube ID extraction
   const extractYouTubeId = (url) => {
@@ -90,6 +92,7 @@ const LearningPage = () => {
           events: {
             'onReady': (event) => {
               console.log("Player is ready");
+              setIsPlayerReady(true);
               try {
                 // Start a timer to update the current time
                 if (timerRef.current) {
@@ -140,6 +143,7 @@ const LearningPage = () => {
             },
             'onError': (event) => {
               console.error('YouTube Player Error:', event);
+              setIsPlayerReady(false);
             }
           }
         });
@@ -154,6 +158,7 @@ const LearningPage = () => {
       if (playerRef.current) {
         try {
           playerRef.current.destroy();
+          setIsPlayerReady(false);
         } catch (error) {
           console.error('Error destroying player:', error);
         }
@@ -389,6 +394,13 @@ const LearningPage = () => {
           
           <div className="relative pt-[56.25%]">
             <div id="youtube-player" className="absolute top-0 left-0 w-full h-full rounded-lg"></div>
+            {isPlayerReady && (
+              <VideoQuizComponent 
+                player={playerRef.current} 
+                videoId={currentVideo.title} 
+                courseId={courseId} 
+              />
+            )}
           </div>
           
           <div className="mt-4 flex flex-wrap gap-2">

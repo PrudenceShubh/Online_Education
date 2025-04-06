@@ -10,7 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.0",
     "@tailwindcss/vite": "^4.0.17",
+    "axios": "^1.8.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
     "framer-motion": "^12.6.2",
     "ogl": "^1.0.11",
     "react": "^19.0.0",
