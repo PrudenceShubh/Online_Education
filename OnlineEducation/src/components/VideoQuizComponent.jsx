@@ -18,25 +18,45 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
 
     const checkTime = () => {
       try {
+        if (!player || typeof player.getCurrentTime !== 'function') return; // Add safety check
+
         const currentTime = Math.floor(player.getCurrentTime());
         const duration = player.getDuration();
-        
+
+        // --- START DEBUG LOGS ---
+        // Only log periodically to avoid flooding console
+        if (currentTime % 5 === 0 && currentTime !== lastCheckedTime) { // Log every 5 seconds
+           console.log(`Checking time: Current = ${currentTime}, Course = ${courseId}, Video = ${videoId}, TimingMode = ${quizTiming}`);
+           const videoQuizzes = quizData[courseId]?.[videoId];
+           console.log('Quizzes for this video:', videoQuizzes);
+           if (videoQuizzes && videoQuizzes[0]) {
+             console.log('Expected Timestamp:', videoQuizzes[0].timeStamp);
+           }
+        }
+        // --- END DEBUG LOGS ---
+
+
         // Skip if we've already checked this second
         if (currentTime === lastCheckedTime) return;
         setLastCheckedTime(currentTime);
-        
+
         // Find the appropriate quiz for the current video time
         const videoQuizzes = quizData[courseId]?.[videoId] || [];
-        
+
         let quizToShow = null;
-        
+
         if (quizTiming === 'auto') {
           // Original behavior - show quiz at specific timestamps
           quizToShow = videoQuizzes.find(quiz => {
-            const shouldShow = currentTime >= quiz.timeStamp && 
-                             currentTime < quiz.timeStamp + 2 && 
-                             !showQuiz && 
+            const shouldShow = currentTime >= quiz.timeStamp &&
+                             currentTime < quiz.timeStamp + 2 && // Check within a 2-second window
+                             !showQuiz &&
                              !quizCompleted;
+            // --- Log if a quiz *should* show ---
+            if(shouldShow){
+              console.log(`FOUND QUIZ TO SHOW at ${currentTime}s for timestamp ${quiz.timeStamp}`);
+            }
+            // ---
             return shouldShow;
           });
         } else if (quizTiming === 'end') {
@@ -47,6 +67,7 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
         }
         
         if (quizToShow) {
+          console.log(">>> Pausing video and showing quiz!"); // Add this log
           player.pauseVideo();
           setShowQuiz(true);
           setCurrentQuestionIndex(0);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { courses } from './CourseList';
+import { courses } from '../data/courseCategories';
 import VideoQuizComponent from './VideoQuizComponent';
 
 const LearningPage = () => {

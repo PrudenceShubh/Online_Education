@@ -7,7 +7,8 @@ import AccountPage from './pages/AccountPage'
 import Footer from './components/Footer'
 import LearningPage from './components/LearningPage'
 import AuthPage from './pages/homePage/AuthPage'
-import ConnectPage from './pages/ConnectPage'  // Add this import
+import ConnectPage from './pages/ConnectPage'
+import CategoryPage from './pages/CategoryPage'
 
 function App() {
   const isAuthenticated = localStorage.getItem('authToken');
@@ -23,8 +24,9 @@ function App() {
             <Route path='/' element={
               isAuthenticated ? <Home/> : <Navigate to="/login" />
             }/>
+            <Route path="/category/:categoryId" element={<CategoryPage />} />
             <Route path="/course/:courseId" element={<LearningPage />} />
-            <Route path='/connect' element={<ConnectPage />} /> {/* Add this route */}
+            <Route path='/connect' element={<ConnectPage />} />
             <Route path='/progress' element={<Progress/>}/>
             <Route path='/account' element={<AccountPage/>}/>
           </Routes>

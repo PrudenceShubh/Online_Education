@@ -18,20 +18,20 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <h3 className="text-xl font-bold mb-4">Smart Interactive Learning</h3>
-            <p className="text-gray-400 mb-4">
+            <p className="text-white-500 mb-4">
               Revolutionizing online learning with AI-powered engagement.
             </p>
             <div className="flex space-x-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-500 transition-colors">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white-500 hover:text-blue-500 transition-colors">
                 <FaFacebook size={24} />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white-500 hover:text-blue-400 transition-colors">
                 <FaTwitter size={24} />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-pink-500 transition-colors">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white-500 hover:text-pink-500 transition-colors">
                 <FaInstagram size={24} />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600 transition-colors">
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white-500 hover:text-blue-600 transition-colors">
                 <FaLinkedin size={24} />
               </a>
             </div>
@@ -42,14 +42,14 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <Link to="/" className="text-white-500 hover:text-white transition-colors flex items-center">
                   <FaHome className="mr-2" /> Home
                 </Link>
               </li>
               <li>
                 <button 
                   onClick={() => scrollToSection('courses-section')} 
-                  className="text-gray-400 hover:text-white transition-colors flex items-center"
+                  className="text-white-500 hover:text-white transition-colors flex items-center"
                 >
                   <FaBook className="mr-2" /> Courses
                 </button>
@@ -57,7 +57,7 @@ const Footer = () => {
               <li>
                 <button 
                   onClick={() => scrollToSection('about-section')} 
-                  className="text-gray-400 hover:text-white transition-colors flex items-center"
+                  className="text-white-500 hover:text-white transition-colors flex items-center"
                 >
                   <FaUserGraduate className="mr-2" /> About Us
                 </button>
@@ -65,7 +65,7 @@ const Footer = () => {
               <li>
                 <button 
                   onClick={() => scrollToSection('footer')} 
-                  className="text-gray-400 hover:text-white transition-colors flex items-center"
+                  className="text-white-500 hover:text-white transition-colors flex items-center"
                 >
                   <FaEnvelope className="mr-2" /> Contact
                 </button>
@@ -77,13 +77,13 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Contact Us</h3>
             <ul className="space-y-2">
-              <li className="flex items-center text-gray-400">
+              <li className="flex items-center text-white-500">
                 <FaPhone className="mr-2" /> +123 456 7890
               </li>
-              <li className="flex items-center text-gray-400">
+              <li className="flex items-center text-white-500">
                 <FaEnvelope className="mr-2" /> support@smartlearning.com
               </li>
-              <li className="flex items-center text-gray-400">
+              <li className="flex items-center text-white-500">
                 <FaMapMarkerAlt className="mr-2" /> 123 Education St, Learning City
               </li>
             </ul>
@@ -92,7 +92,7 @@ const Footer = () => {
           {/* Newsletter */}
           <div>
             <h3 className="text-xl font-bold mb-4">Newsletter</h3>
-            <p className="text-gray-400 mb-4">
+            <p className="text-white-500 mb-4">
               Subscribe to our newsletter for the latest updates and offers.
             </p>
             <form className="flex flex-col space-y-2">
@@ -111,7 +111,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-white-500">
           <p>&copy; {new Date().getFullYear()} Smart Interactive Learning. All rights reserved.</p>
         </div>
       </div>
