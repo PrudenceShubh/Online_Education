@@ -1,8 +1,0 @@
-version: "2"
-tunnels:
-  frontend:
-    addr: 5173
-    proto: http
-  websocket:
-    addr: 5005
-    proto: http

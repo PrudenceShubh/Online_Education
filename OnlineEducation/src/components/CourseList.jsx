@@ -106,7 +106,7 @@ const CourseList = ({ showAll }) => {
   const displayedCourses = showAll ? courses : courses.slice(0, 4);
 
   return (
-    <div className="container justify-center mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 justify-items-center">
+    <>
       {displayedCourses.map((course) => (
         <CourseCard
           key={course.id}
@@ -118,7 +118,7 @@ const CourseList = ({ showAll }) => {
           videos={course.videos}
         />
       ))}
-    </div>
+    </>
   );
 };
 
