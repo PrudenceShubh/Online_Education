@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,11 @@ const Navbar = () => {
   return (
     <nav className="bg-gray-800 text-white p-5">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-xl font-bold">Vidha-mitra</div>
+        {/* <div className="text-xl font-bold">Vidhya-mitra</div> */}
+        <Link to="/" className="flex items-center">
+          
+          <span className="text-2xl text-blue-500  font-bold">Vidya-mitra</span>
+        </Link>
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex gap-10 text-lg font-semibold">

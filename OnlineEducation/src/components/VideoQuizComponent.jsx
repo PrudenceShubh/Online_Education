@@ -12,62 +12,99 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
   const [wrongAnswers, setWrongAnswers] = useState([]);
   const [quizTiming, setQuizTiming] = useState('auto'); // 'auto', 'end', or 'none'
   const [lastCheckedTime, setLastCheckedTime] = useState(-1); // Track last checked time
-
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
+  
   useEffect(() => {
-    if (!player) return;
+    if (!player) {
+      console.error("Player is null or undefined");
+      return;
+    }
+    
+    // Check if the player has the required methods
+    if (typeof player.getCurrentTime !== 'function' || typeof player.getDuration !== 'function') {
+      console.error("Player is missing required methods:", player);
+      return;
+    }
+    
+    console.log("Player initialized successfully");
+    setIsPlayerReady(true);
 
     const checkTime = () => {
       try {
-        if (!player || typeof player.getCurrentTime !== 'function') return; // Add safety check
-
+        if (!player) return;
         const currentTime = Math.floor(player.getCurrentTime());
-        const duration = player.getDuration();
-
-        // --- START DEBUG LOGS ---
-        // Only log periodically to avoid flooding console
-        if (currentTime % 5 === 0 && currentTime !== lastCheckedTime) { // Log every 5 seconds
-           console.log(`Checking time: Current = ${currentTime}, Course = ${courseId}, Video = ${videoId}, TimingMode = ${quizTiming}`);
-           const videoQuizzes = quizData[courseId]?.[videoId];
-           console.log('Quizzes for this video:', videoQuizzes);
-           if (videoQuizzes && videoQuizzes[0]) {
-             console.log('Expected Timestamp:', videoQuizzes[0].timeStamp);
-           }
+        
+        // Debug logging - VERY IMPORTANT
+        console.log(`Looking for quiz: courseId="${courseId}", videoId="${videoId}", time=${currentTime}`);
+        
+        // First try specific course/video
+        let videoQuizzes = quizData[courseId]?.[videoId];
+        
+        if (!videoQuizzes || videoQuizzes.length === 0) {
+          console.log(`No quiz found for ${courseId}/${videoId}, checking alternatives...`);
+          
+          // Try finding by only courseId with any video
+          const courseQuizzes = quizData[courseId];
+          if (courseQuizzes) {
+            const firstVideoKey = Object.keys(courseQuizzes)[0];
+            if (firstVideoKey) {
+              console.log(`Found quiz for course ${courseId} under video "${firstVideoKey}"`);
+              videoQuizzes = courseQuizzes[firstVideoKey];
+            }
+          }
+          
+          // If still not found, use default
+          if (!videoQuizzes || videoQuizzes.length === 0) {
+            console.log("Using default quiz as last resort");
+            videoQuizzes = quizData["default"]["default"];
+          }
         }
-        // --- END DEBUG LOGS ---
-
-
+        
+        console.log("Available quizzes:", videoQuizzes);
+        
+        // Force quiz at 10 seconds for testing - MAKE SURE THIS WORKS
+        if (currentTime >= 10 && currentTime < 12 && !showQuiz && !quizCompleted) {
+          console.log("SHOWING QUIZ AT 10 SECONDS");
+          player.pauseVideo();
+          setShowQuiz(true);
+          setCurrentQuestionIndex(0);
+          setCurrentQuiz(videoQuizzes[0].questions[0]);
+          setWrongAnswers([]);
+          return;
+        }
+        
         // Skip if we've already checked this second
         if (currentTime === lastCheckedTime) return;
         setLastCheckedTime(currentTime);
-
+        
         // Find the appropriate quiz for the current video time
-        const videoQuizzes = quizData[courseId]?.[videoId] || [];
-
+        console.log("Checking time: Current =", currentTime, 
+                    "Course =", courseId, 
+                    "Video =", videoId, 
+                    "TimingMode =", quizTiming);
+        
+        console.log("Quizzes for this video:", videoQuizzes);
+        
         let quizToShow = null;
-
+        
         if (quizTiming === 'auto') {
           // Original behavior - show quiz at specific timestamps
           quizToShow = videoQuizzes.find(quiz => {
-            const shouldShow = currentTime >= quiz.timeStamp &&
-                             currentTime < quiz.timeStamp + 2 && // Check within a 2-second window
-                             !showQuiz &&
+            const shouldShow = currentTime >= quiz.timeStamp && 
+                             currentTime < quiz.timeStamp + 2 && 
+                             !showQuiz && 
                              !quizCompleted;
-            // --- Log if a quiz *should* show ---
-            if(shouldShow){
-              console.log(`FOUND QUIZ TO SHOW at ${currentTime}s for timestamp ${quiz.timeStamp}`);
-            }
-            // ---
             return shouldShow;
           });
         } else if (quizTiming === 'end') {
           // Show quiz at the end of the video
+          const duration = player.getDuration();
           if (currentTime >= duration - 5 && !showQuiz && !quizCompleted) {
             quizToShow = videoQuizzes[0]; // Use the first quiz set
           }
         }
         
         if (quizToShow) {
-          console.log(">>> Pausing video and showing quiz!"); // Add this log
           player.pauseVideo();
           setShowQuiz(true);
           setCurrentQuestionIndex(0);
@@ -99,10 +136,13 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
       setShowSummary(true);
     } else {
       // Move to next question or complete quiz
-      if (currentQuestionIndex < quizData[courseId]?.[videoId]?.[0]?.questions.length - 1) {
+      const quizQuestions = quizData[courseId]?.[videoId]?.[0]?.questions || 
+                          quizData["default"]["default"][0].questions;
+      
+      if (currentQuestionIndex < quizQuestions.length - 1) {
         setTimeout(() => {
           setCurrentQuestionIndex(prev => prev + 1);
-          setCurrentQuiz(quizData[courseId]?.[videoId]?.[0]?.questions[currentQuestionIndex + 1]);
+          setCurrentQuiz(quizQuestions[currentQuestionIndex + 1]);
           setSelectedAnswer(null);
           setIsCorrect(null);
         }, 1000);
@@ -186,6 +226,11 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
 
   return (
     <>
+      {/* Debug indicator */}
+      <div className="absolute top-0 left-0 bg-blue-900/70 text-white p-1 text-xs z-50">
+        Quiz Ready: {isPlayerReady ? 'Yes' : 'No'} | Mode: {quizTiming}
+      </div>
+      
       {showQuiz && currentQuiz && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-800 p-6 rounded-lg max-w-lg w-full">
@@ -194,7 +239,8 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-bold">Quiz Question {currentQuestionIndex + 1}</h3>
                   <span className="text-sm text-gray-400">
-                    {quizData[courseId]?.[videoId]?.[0]?.questions.length} questions total
+                    {(quizData[courseId]?.[videoId]?.[0]?.questions || 
+                      quizData["default"]["default"][0].questions).length} questions total
                   </span>
                 </div>
                 

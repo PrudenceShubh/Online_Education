@@ -26,6 +26,43 @@ const ConnectPage = () => {
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState(['', '']);
   
+  // PDF sharing feature
+  const [sharedDocuments, setSharedDocuments] = useState([
+    {
+      id: 'doc1',
+      userId: 'user_123',
+      username: 'Sarah',
+      title: 'React Hooks Cheatsheet',
+      description: 'Complete guide to React hooks with examples',
+      fileUrl: '/sample-documents/react-hooks.pdf',
+      timestamp: new Date('2023-09-15T14:30:00'),
+      downloads: 12
+    },
+    {
+      id: 'doc2',
+      userId: 'user_456',
+      username: 'Michael',
+      title: 'CSS Grid Layout Tutorial',
+      description: 'Comprehensive CSS Grid reference with diagrams',
+      fileUrl: '/sample-documents/css-grid.pdf',
+      timestamp: new Date('2023-09-15T15:45:00'),
+      downloads: 8
+    },
+    {
+      id: 'doc3',
+      userId: 'user_789',
+      username: 'Jennifer',
+      title: 'JavaScript Async Programming',
+      description: 'Deep dive into Promises, async/await and more',
+      fileUrl: '/sample-documents/js-async.pdf',
+      timestamp: new Date('2023-09-15T16:20:00'),
+      downloads: 15
+    }
+  ]);
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [documentDescription, setDocumentDescription] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  
   // Refs
   const videoRef = useRef();
   const socketRef = useRef();
@@ -82,7 +119,8 @@ const ConnectPage = () => {
     socketRef.current.on('whiteboardUpdate', handleWhiteboardUpdate);
     socketRef.current.on('pollCreated', handlePollCreated);
     socketRef.current.on('pollUpdated', handlePollUpdated);
-    socketRef.current.on('handRaised', handleHandRaised);
+    socketRef.current.on('documentAdded', handleNewDocument);
+    socketRef.current.on('documentDownloaded', handleDocumentDownloaded);
 
     return () => {
       socketRef.current.disconnect();
@@ -176,9 +214,14 @@ const ConnectPage = () => {
     }
   };
 
-  const handleHandRaised = (data) => {
-    // Update UI to show who raised their hand
-    console.log(`${data.username} ${data.raised ? 'raised' : 'lowered'} their hand`);
+  const handleNewDocument = (document) => {
+    setSharedDocuments(prev => [...prev, document]);
+  };
+
+  const handleDocumentDownloaded = (data) => {
+    setSharedDocuments(prev => prev.map(doc => 
+      doc.id === data.documentId ? {...doc, downloads: data.downloads} : doc
+    ));
   };
 
   const sendMessage = (e) => {
@@ -366,6 +409,62 @@ const ConnectPage = () => {
       });
     }
   }, [showWhiteboard, whiteboardElements]);
+
+  const shareDocument = (e) => {
+    e.preventDefault();
+    if (!documentTitle.trim() || !documentDescription.trim() || !selectedFile) return;
+
+    // In a real implementation, you would upload the file to a server here
+    // For now, we'll create a fake URL
+    const fakeFileUrl = URL.createObjectURL(selectedFile);
+
+    // Optimistically add to UI
+    const newDocument = {
+      id: 'doc_' + Date.now(),
+      userId,
+      username,
+      title: documentTitle,
+      description: documentDescription,
+      fileUrl: fakeFileUrl,
+      timestamp: new Date(),
+      downloads: 0,
+      fileName: selectedFile.name
+    };
+    
+    setSharedDocuments(prev => [...prev, newDocument]);
+    
+    // Send to server (In a real implementation)
+    // socketRef.current.emit('addDocument', formData);
+    
+    // Reset form
+    setDocumentTitle('');
+    setDocumentDescription('');
+    setSelectedFile(null);
+  };
+
+  const downloadDocument = (documentId) => {
+    // Find the document
+    const document = sharedDocuments.find(doc => doc.id === documentId);
+    if (!document) return;
+    
+    // In a real implementation, this would trigger the actual download
+    // Here we just update the download count
+    setSharedDocuments(prev => prev.map(doc => 
+      doc.id === documentId ? {...doc, downloads: doc.downloads + 1} : doc
+    ));
+    
+    // Simulate a download by opening in a new tab
+    window.open(document.fileUrl, '_blank');
+    
+    // Send to server (In a real implementation)
+    socketRef.current.emit('downloadDocument', { roomId, documentId });
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 p-4">
@@ -652,6 +751,80 @@ const ConnectPage = () => {
               <FaPaperPlane />
             </button>
           </form>
+        </div>
+        
+        {/* Document Sharing Section */}
+        <div className="md:col-span-3 bg-gray-800 p-4 rounded-lg mt-4">
+          <h2 className="text-xl font-bold text-white mb-4">Shared Documents</h2>
+          
+          {/* Add Document Form */}
+          <form onSubmit={shareDocument} className="mb-4 bg-gray-700 p-4 rounded-lg">
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-300 mb-1">Document Title</label>
+              <input
+                type="text"
+                value={documentTitle}
+                onChange={(e) => setDocumentTitle(e.target.value)}
+                className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg"
+                placeholder="e.g., React Hooks Cheatsheet, CSS Grid Tutorial, etc."
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
+              <textarea
+                value={documentDescription}
+                onChange={(e) => setDocumentDescription(e.target.value)}
+                className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg min-h-[80px]"
+                placeholder="Briefly describe what's in this document..."
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-300 mb-1">Upload PDF</label>
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleFileChange}
+                className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg"
+              />
+              {selectedFile && (
+                <p className="text-sm text-green-400 mt-1">
+                  Selected: {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
+                </p>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg"
+              disabled={!selectedFile}
+            >
+              Share Document
+            </button>
+          </form>
+          
+          {/* Documents List */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sharedDocuments.map((doc) => (
+              <div key={doc.id} className="bg-gray-700 p-4 rounded-lg">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-semibold text-white">{doc.title}</h3>
+                  <span className="bg-gray-600 text-xs text-gray-300 px-2 py-1 rounded">PDF</span>
+                </div>
+                <p className="text-gray-300 mb-3">{doc.description}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">{doc.username} • {new Date(doc.timestamp).toLocaleDateString()}</span>
+                  <button
+                    onClick={() => downloadDocument(doc.id)}
+                    className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                  >
+                    Download ({doc.downloads})
+                  </button>
+                </div>
+                {doc.fileName && (
+                  <p className="text-xs text-gray-400 mt-2 truncate">{doc.fileName}</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
