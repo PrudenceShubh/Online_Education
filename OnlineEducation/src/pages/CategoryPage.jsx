@@ -77,14 +77,10 @@ const CategoryPage = () => {
 
       <div className="hidden lg:block lg:fixed lg:top-24 lg:right-8 lg:w-80 bg-gray-800/50 backdrop-blur-lg rounded-xl border border-gray-700/50 p-4">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center">
+          <h2 className="text-xl font-semibold flex items-center text-white">
             <FaStar className="text-yellow-500 mr-2" />
-            {isCardExpanded && (
-              <h2 className="text-xl font-semibold text-white">
-                {categoryHighlights.title}
-              </h2>
-            )}
-          </div>
+            {categoryHighlights.title}
+          </h2>
           <button
             onClick={() => setIsCardExpanded(!isCardExpanded)}
             className="text-gray-300 hover:text-gray-100"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { quizData } from '../data/quizData';
+import VideoQuizComponent from './VideoQuizComponent';
 
 const VideoQuizComponent = ({ player, videoId, courseId }) => {
   const [showQuiz, setShowQuiz] = useState(false);
@@ -14,49 +15,59 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
   const [lastCheckedTime, setLastCheckedTime] = useState(-1); // Track last checked time
 
   useEffect(() => {
-    if (!player) return;
+    if (!player) {
+      console.error("Player is null or undefined");
+      return;
+    }
+    
+    // Check if the player has the required methods
+    if (typeof player.getCurrentTime !== 'function' || typeof player.getDuration !== 'function') {
+      console.error("Player is missing required methods:", player);
+      return;
+    }
+    
+    console.log("Player initialized successfully");
 
     const checkTime = () => {
       try {
-        if (!player || typeof player.getCurrentTime !== 'function') return; // Add safety check
-
-        const currentTime = Math.floor(player.getCurrentTime());
-        const duration = player.getDuration();
-
-        // --- START DEBUG LOGS ---
-        // Only log periodically to avoid flooding console
-        if (currentTime % 5 === 0 && currentTime !== lastCheckedTime) { // Log every 5 seconds
-           console.log(`Checking time: Current = ${currentTime}, Course = ${courseId}, Video = ${videoId}, TimingMode = ${quizTiming}`);
-           const videoQuizzes = quizData[courseId]?.[videoId];
-           console.log('Quizzes for this video:', videoQuizzes);
-           if (videoQuizzes && videoQuizzes[0]) {
-             console.log('Expected Timestamp:', videoQuizzes[0].timeStamp);
-           }
+        if (!player || typeof player.getCurrentTime !== 'function') {
+          console.error("Invalid player in checkTime", player);
+          return;
         }
-        // --- END DEBUG LOGS ---
-
-
+        
+        const currentTime = Math.floor(player.getCurrentTime());
+        console.log("Current video time:", currentTime);
+        
+        // Force a quiz to appear for testing (remove in production)
+        if (currentTime > 10 && !showQuiz && !quizCompleted) {
+          console.log("FORCING QUIZ TO APPEAR FOR TESTING");
+          const videoQuizzes = quizData[courseId]?.[videoId] || quizData["default"]["default"] || [];
+          if (videoQuizzes.length > 0) {
+            player.pauseVideo();
+            setShowQuiz(true);
+            setCurrentQuestionIndex(0);
+            setCurrentQuiz(videoQuizzes[0].questions[0]);
+            setWrongAnswers([]);
+            return;
+          }
+        }
+        
         // Skip if we've already checked this second
         if (currentTime === lastCheckedTime) return;
         setLastCheckedTime(currentTime);
-
+        
         // Find the appropriate quiz for the current video time
-        const videoQuizzes = quizData[courseId]?.[videoId] || [];
-
+        const videoQuizzes = quizData[courseId]?.[videoId] || quizData["default"]["default"] || [];
+        
         let quizToShow = null;
-
+        
         if (quizTiming === 'auto') {
           // Original behavior - show quiz at specific timestamps
           quizToShow = videoQuizzes.find(quiz => {
-            const shouldShow = currentTime >= quiz.timeStamp &&
-                             currentTime < quiz.timeStamp + 2 && // Check within a 2-second window
-                             !showQuiz &&
+            const shouldShow = currentTime >= quiz.timeStamp && 
+                             currentTime < quiz.timeStamp + 2 && 
+                             !showQuiz && 
                              !quizCompleted;
-            // --- Log if a quiz *should* show ---
-            if(shouldShow){
-              console.log(`FOUND QUIZ TO SHOW at ${currentTime}s for timestamp ${quiz.timeStamp}`);
-            }
-            // ---
             return shouldShow;
           });
         } else if (quizTiming === 'end') {
@@ -67,7 +78,6 @@ const VideoQuizComponent = ({ player, videoId, courseId }) => {
         }
         
         if (quizToShow) {
-          console.log(">>> Pausing video and showing quiz!"); // Add this log
           player.pauseVideo();
           setShowQuiz(true);
           setCurrentQuestionIndex(0);

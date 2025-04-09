@@ -2,9 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { courses } from '../data/courseCategories';
 import VideoQuizComponent from './VideoQuizComponent';
+import QuizPopup from './QuizPopup';
 
 const LearningPage = () => {
   const { courseId } = useParams();
+  // Add quiz-related state
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizTiming, setQuizTiming] = useState('auto');
+  
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [courseData, setCourseData] = useState(null);
   const [chatInput, setChatInput] = useState("");
@@ -387,6 +392,12 @@ const LearningPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col p-4">
+      {showQuiz && (
+        <QuizPopup
+          onClose={() => setShowQuiz(false)}
+          onComplete={handleQuizComplete}
+        />
+      )}
       <div className="flex flex-col md:flex-row gap-4">
         {/* Video Section */}
         <div className="flex-1 bg-gray-800 p-4 rounded-lg shadow-md">
@@ -595,3 +606,21 @@ const LearningPage = () => {
 };
 
 export default LearningPage;
+
+  // Add quiz timing effect
+  useEffect(() => {
+    if (currentVideoTime === 10 && quizTiming === 'auto') {
+      setShowQuiz(true);
+      if (playerRef.current && playerRef.current.pauseVideo) {
+        playerRef.current.pauseVideo();
+      }
+    }
+  }, [currentVideoTime, quizTiming]);
+
+  // Add quiz completion handler
+  const handleQuizComplete = () => {
+    setShowQuiz(false);
+    if (playerRef.current && playerRef.current.playVideo) {
+      playerRef.current.playVideo();
+    }
+  };

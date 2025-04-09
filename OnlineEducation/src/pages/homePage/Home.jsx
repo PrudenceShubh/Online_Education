@@ -5,11 +5,17 @@ import { FaRocket, FaGraduationCap, FaUsers, FaChartLine, FaTimes } from 'react-
 import CourseCategory from "../../components/CourseCategory";
 import { categories } from "../../data/courseCategories";
 import { shubhn } from "../../assets/video/video";
+import VideoQuizComponent from "../../components/VideoQuizComponent";
+import shagun from "../../assets/shagun.png"
 
 const Home = () => {
   const [activeFeature, setActiveFeature] = useState(0);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const videoRef = useRef(null);
+  const playerRef = useRef(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(true);
+  const courseId = "html-css-js-basics"; // Updated courseId
+  const videoId = "HTML, CSS & JS Full Course"; // Updated videoId
 
   const features = [
     {
@@ -60,38 +66,27 @@ const Home = () => {
     setSelectedFeature(null);
   };
 
+  const [currentTime, setCurrentTime] = useState(0);
+
+  // Add this function to track video time
+  const handleTimeUpdate = (e) => {
+    setCurrentTime(e.target.currentTime);
+  };
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
-      {/* Hero Section */}
       <div className="relative w-full px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="relative w-full max-w-6xl mx-auto overflow-hidden rounded-2xl shadow-2xl">
-          <video
-            ref={videoRef}
-            src={shubhn}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          />
-          {/* <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-gradient-to-r from-black/70 to-black/50 rounded-2xl p-8 text-center">
-            <h1
-              className="text-4xl sm:text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500"
-            >
-              Smart Interactive Learning
-            </h1>
-            <p
-              className="text-lg sm:text-xl md:text-2xl mt-4 text-gray-200"
-            >
-              Engage, Learn, and Retain Better with AI-Powered Learning
-            </p>
-            <button
-              className="mt-8 px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full text-white font-bold text-lg transform hover:scale-105 transition-all duration-300 shadow-lg"
-            >
-              Get Started
-            </button>
-          </div> */}
+          <img src={shagun} className="w-full" alt="" />
         </div>
+        <VideoQuizComponent 
+          player={videoRef.current}
+          videoId={videoId} 
+          courseId={courseId}
+          timingMode="auto"
+          currentTime={currentTime}  // Add this line
+          quizTime={10}  // Add this line to specify when the quiz should appear
+        />
       </div>
 
       {/* Features Section */}
