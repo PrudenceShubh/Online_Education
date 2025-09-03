@@ -11,7 +11,7 @@ import ConnectPage from './pages/ConnectPage'
 import CategoryPage from './pages/CategoryPage'
 
 function App() {
-  const isAuthenticated = localStorage.getItem('authToken');
+  
 
   return (
     <>
@@ -22,7 +22,7 @@ function App() {
             <Route path='/login' element={<AuthPage isSignup={false} />}/>
             <Route path='/signup' element={<AuthPage isSignup={true} />}/>
             <Route path='/' element={
-              isAuthenticated ? <Home/> : <Navigate to="/login" />
+               <Home/> 
             }/>
             <Route path="/category/:categoryId" element={<CategoryPage />} />
             <Route path="/course/:courseId" element={<LearningPage />} />

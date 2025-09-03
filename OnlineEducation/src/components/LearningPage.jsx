@@ -603,10 +603,6 @@ const LearningPage = () => {
       </div>
     </div>
   );
-};
-
-export default LearningPage;
-
   // Add quiz timing effect
   useEffect(() => {
     if (currentVideoTime === 10 && quizTiming === 'auto') {
@@ -624,3 +620,7 @@ export default LearningPage;
       playerRef.current.playVideo();
     }
   };
+
+};
+
+export default LearningPage;
